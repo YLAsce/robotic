@@ -127,10 +127,15 @@ public:
             nb_pts = 0;
             if (!current_robot_moving)
             {
+                if(previous_robot_moving) //@@IMPD,  ONLY DO THIS WHEN ROBOT ENTER STOP STATUS!!!
+                {
+                    store_background(); //@@IMPD
+                    reset_motion();     //@@IMPD
+                }
                 // if the robot is not moving then we can perform moving person detection
-                reset_motion();     //@@IMPD
+                
                 detect_motion();    //@@IMPD
-                store_background(); //@@IMPD
+                
                 // we search for moving person in 4 steps
                 perform_clustering(); // to perform clustering
                 detect_legs();        // to detect moving legs using cluster
@@ -268,7 +273,7 @@ public:
 
                 // 1/ we end the current cluster, so we update:
                 // to store the last hit of the current cluster
-                end = loop;                                              //@@IMPD
+                end = loop - 1;                                          //@@IMPD
                 float xcs = current_scan[start].x - current_scan[end].x; //@@IMPD
                 float ycs = current_scan[start].y - current_scan[end].y; //@@IMPD
                 cluster_size[nb_cluster] = sqrt(xcs * xcs + ycs * ycs);  //@@IMPD // to store the size of the cluster ie, the euclidian distance between the first hit of the cluster and the last one
@@ -395,10 +400,10 @@ public:
             {
                 leg_detected[nb_legs_detected] = cluster_middle[loop]; //@@IMPD
                 leg_cluster[nb_legs_detected] = loop;                  //@@IMPD
-                if (cluster_dynamic[loop] > dynamic_threshold)        //@@IMPD
+                if (cluster_dynamic[loop] > dynamic_threshold)         //@@IMPD
                     leg_dynamic[nb_legs_detected] = true;              //@@IMPD
-                else                                                  //@@IMPD
-                    leg_dynamic[nb_legs_detected] = false;            //@@IMPD
+                else                                                   //@@IMPD
+                    leg_dynamic[nb_legs_detected] = false;             //@@IMPD
 
                 if (leg_dynamic[nb_legs_detected])
                 {
@@ -542,8 +547,8 @@ public:
                 // we update moving_person_tracked and publish it
                 moving_person_detected = person_detected[loop]; //@@IMPD
                 pub_detection_node.publish(moving_person_detected);
+                ROS_INFO("detecting a moving person done %f %f", moving_person_detected.x, moving_person_detected.y);
             }
-        ROS_INFO("detecting a moving person done");
 
     } // detect_moving_person
 
