@@ -218,10 +218,12 @@ void compute_translation()
 
     ROS_INFO("translation_to_do: %f, translation_done: %f, error_translation: %f", translation_to_do, translation_done, error_translation);
 
-    //cond_translation = error_translation <  translation_error_threshold ? false : true; //@@IMPD //cond_translation is used to control if we stop or not the pid for translation
+    cond_translation = error_translation <  error_translation_threshold ? false : true; //@@IMPD //cond_translation is used to control if we stop or not the pid for translation
 
     if ( cond_translation )
     {
+        error_previous_translation = error_translation;
+        translation_speed = error_translation;
         //Implementation of a PID controller for translation_to_do;
 
         // float error_derivation_translation = ...;
