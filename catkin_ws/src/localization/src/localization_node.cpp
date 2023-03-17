@@ -232,6 +232,12 @@ void estimate_position() {
 
     //estimation of the positions closed to the predicted_position
     float min_x, max_x, min_y, max_y, min_orientation, max_orientation;
+    min_x = predicted_position.x-1;
+    max_x = predicted_position.x+1;
+    min_y = predicted_position.y-1;
+    max_y = predicted_position.y+1;
+    min_orientation = - M_PI;
+    max_orientation = M_PI;
     //we search the position with the highest sensor_model in a square of 1x1 meter around the predicted_position and with orientations around the predicted_orientation -M_PI/6 and +M_PI/6
     ROS_INFO("possible positions to tests: (%f, %f, %f) -> (%f, %f, %f)", min_x, min_y, min_orientation*180/M_PI, max_x, max_y, max_orientation*180/M_PI);
 
