@@ -171,8 +171,10 @@ void initialize_localization() {
     //we search the position with the highest sensor_model in a square of 2x2 meters around the initial_position and with all possible orientations
     ROS_INFO("possible positions to tests: (%f, %f, %f) -> (%f, %f, %f)", min_x, min_y, min_orientation*180/M_PI, max_x, max_y, max_orientation*180/M_PI);
 
-    /*loop over all the possible positions (x, y, theta) {
-     *  * the increment on x and y is of 5cms and on theta is of 5 degrees
+    for(float loop_x = min_x; loop_x <= max_x; loop_x += 0.05) //@@IMPD
+        for(float loop_y = min_y; loop_y <= max_y; loop_y += 0.05) //@@IMPD
+            for(float o = min_orientation; o <= max_orientation; o += 5 * (M_PI / 180.0)){//@@IMPD
+     //*  * the increment on x and y is of 5cms and on theta is of 5 degrees
         if ( cell_value(loop_x, loop_y) == 0 ) { // robair can only be at a free cell
             int score_current = sensor_model(loop_x, loop_y, o);
             ROS_INFO("(%f, %f, %f): score = %i", loop_x, loop_y, o*180/M_PI, score_current);
@@ -181,7 +183,7 @@ void initialize_localization() {
             getchar();
             //we store the maximum score over all the possible positions in estimated_position
         }
-    }*/
+    }
 
     ROS_INFO("initialize localization done");
 
@@ -226,8 +228,10 @@ void estimate_position() {
     //we search the position with the highest sensor_model in a square of 1x1 meter around the predicted_position and with orientations around the predicted_orientation -M_PI/6 and +M_PI/6
     ROS_INFO("possible positions to tests: (%f, %f, %f) -> (%f, %f, %f)", min_x, min_y, min_orientation*180/M_PI, max_x, max_y, max_orientation*180/M_PI);
 
-    /*loop over all the possible positions (x, y, theta) {
-     * the increment on x and y is of 5cms and on theta is of 5 degrees
+    for(float loop_x = min_x; loop_x <= max_x; loop_x += 0.05) //@@IMPD
+        for(float loop_y = min_y; loop_y <= max_y; loop_y += 0.05) //@@IMPD
+            for(float o = min_orientation; o <= max_orientation; o += 5 * (M_PI / 180.0)){//@@IMPD
+     //*  * the increment on x and y is of 5cms and on theta is of 5 degrees
         if ( cell_value(loop_x, loop_y) == 0 ) { // robair can only be at a free cell
             int score_current = sensor_model(loop_x, loop_y, o);
             ROS_INFO("(%f, %f, %f): score = %i", loop_x, loop_y, o*180/M_PI, score_current);
@@ -236,7 +240,7 @@ void estimate_position() {
             getchar();
             //we store the maximum score over all the possible positions in estimated_position
         }
-    }*/
+    }
 
     ROS_INFO("estimate_position done");
 
@@ -277,8 +281,8 @@ int sensor_model(float x, float y, float o)
         //for each hit of the laser, we compute its position in the map and check if it is occupied or not
 
         geometry_msgs::Point hit;
-        //hit.x = ...;
-        //hit.y = ..;
+        hit.x = x + r[loop] * cos(o + theta[loop]);//@@IMPD
+        hit.y = y + r[loop] * sin(o + theta[loop]);//@@IMPD
 
         // we add the current hit to the hits to display
         display[nb_pts] = hit;
