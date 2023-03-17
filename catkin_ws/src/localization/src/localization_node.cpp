@@ -169,10 +169,10 @@ void initialize_localization() {
 
     float min_x, max_x, min_y, max_y, min_orientation, max_orientation;
 
-    min_x = init_position.x-1;
-    max_x = init_position.x+1;
-    min_y = init_position.y-1;
-    max_y = init_position.y+1;
+    min_x = initial_position.x-1;
+    max_x = initial_position.x+1;
+    min_y = initial_position.y-1;
+    max_y = initial_position.y+1;
     min_orientation = - M_PI;
     max_orientation = M_PI;
     //we search the position with the highest sensor_model in a square of 2x2 meters around the initial_position and with all possible orientations
