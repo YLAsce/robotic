@@ -168,6 +168,13 @@ void initialize_localization() {
     odom_last_orientation = odom_current_orientation;
 
     float min_x, max_x, min_y, max_y, min_orientation, max_orientation;
+
+    min_x = init_position.x-1;
+    max_x = init_position.x+1;
+    min_y = init_position.y-1;
+    max_y = init_position.y+1;
+    min_orientation = - M_PI;
+    max_orientation = M_PI;
     //we search the position with the highest sensor_model in a square of 2x2 meters around the initial_position and with all possible orientations
     ROS_INFO("possible positions to tests: (%f, %f, %f) -> (%f, %f, %f)", min_x, min_y, min_orientation*180/M_PI, max_x, max_y, max_orientation*180/M_PI);
 
