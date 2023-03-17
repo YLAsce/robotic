@@ -193,9 +193,9 @@ void initialize_localization() {
             }
         }
     }
-    ROS_INFO("(%f, %f, %f): bestscore = %i", estimate_position.x, estimate_position.y, estimated_orientation*180/M_PI, score_max);//@@IMPD
+    ROS_INFO("(%f, %f, %f): bestscore = %i", estimated_position.x, estimated_position.y, estimated_orientation*180/M_PI, score_max);//@@IMPD
     //Update marker display information, the score calculated here is unused.
-    sensor_model(estimate_position.x, estimate_position.y, estimated_orientation);//@@IMPD
+    sensor_model(estimated_position.x, estimated_position.y, estimated_orientation);//@@IMPD
     populateMarkerTopic();
 
     ROS_INFO("initialize localization done");
@@ -262,9 +262,9 @@ void estimate_position() {
             }
         }
     }
-    ROS_INFO("(%f, %f, %f): bestscore = %i", estimate_position.x, estimate_position.y, estimated_orientation*180/M_PI, score_max);//@@IMPD
+    ROS_INFO("(%f, %f, %f): bestscore = %i", estimated_position.x, estimated_position.y, estimated_orientation*180/M_PI, score_max);//@@IMPD
     //Update marker display information, the score calculated here is unused.
-    sensor_model(estimate_position.x, estimate_position.y, estimated_orientation);//@@IMPD
+    sensor_model(estimated_position.x, estimated_position.y, estimated_orientation);//@@IMPD
     populateMarkerTopic();//@@IMPD
 
     ROS_INFO("estimate_position done");
