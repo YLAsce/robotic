@@ -127,15 +127,15 @@ public:
             nb_pts = 0;
             if (!current_robot_moving)
             {
-                if(previous_robot_moving) //@@IMPD,  ONLY DO THIS WHEN ROBOT ENTER STOP STATUS!!!
+                if (previous_robot_moving) //@@IMPD,  ONLY DO THIS WHEN ROBOT ENTER STOP STATUS!!!
                 {
                     store_background(); //@@IMPD
                     reset_motion();     //@@IMPD
                 }
                 // if the robot is not moving then we can perform moving person detection
-                
-                detect_motion();    //@@IMPD
-                
+
+                detect_motion(); //@@IMPD
+
                 // we search for moving person in 4 steps
                 perform_clustering(); // to perform clustering
                 detect_legs();        // to detect moving legs using cluster

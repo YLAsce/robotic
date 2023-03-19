@@ -115,11 +115,11 @@ void update() {
             init_action();
 
         //we are performing a rotation and a translation
-        if ( cond_goal )
+        if ( cond_goal )//???
         {
             compute_rotation();
             compute_translation();
-            //cond_goal = ... DO NOT FORGET TO UPDATE cond_goal
+            cond_goal = translation_to_do > error_translation_threshold ? true : false;//??? //cond_goal = ... DO NOT FORGET TO UPDATE cond_goal
             combine_rotation_and_translation();            
             move_robot();
         }
@@ -223,10 +223,10 @@ void compute_translation()
     if ( cond_translation )
     {
         error_previous_translation = error_translation;
-        translation_speed = error_translation;
+        translation_speed = error_translation; //@@IMPD
         //Implementation of a PID controller for translation_to_do;
 
-        // float error_derivation_translation = ...;
+        //float error_derivation_translation = ;
         //ROS_INFO("error_derivation_translation: %f", error_derivation_translation);
 
         // error_integral_translation = ...
@@ -242,12 +242,12 @@ void compute_translation()
 void combine_rotation_and_translation()
 {
 
-    float coef_rotation;// = ...;
+    float coef_rotation = abs(rotation_speed) / rotation_speed_max;//@@IMPD
     if ( coef_rotation >= 1 )
         coef_rotation = 1;
     float coef_translation = 1 - coef_rotation;
 
-    //translation_speed = ...
+    translation_speed = translation_speed_max * coef_translation;//@@IMPD
     ROS_INFO("coef_rotation: %f, rotation_speed: %f, coef_translation: %f, translation_speed: %f", coef_rotation, rotation_speed*180/M_PI, coef_translation, translation_speed);
 
 }//combine_rotation_and_translation
