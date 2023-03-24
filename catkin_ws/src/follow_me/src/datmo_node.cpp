@@ -167,9 +167,11 @@ public:
             detect_persons();     // to detect moving_person using moving legs detected
 
             // When do we do detection and when do we do tracking ?
-            detect_a_moving_person();
-            track_a_moving_person();
-
+            if(tracking_mode)
+                track_a_moving_person();
+            else
+                detect_a_moving_person();
+            
             // graphical display of the results
             populateMarkerTopic();
         }
@@ -568,7 +570,7 @@ public:
         ROS_INFO("tracking a moving person");
 
         bool associated = false;
-        float distance_min = uncertainty_max;
+        float distance_min = uncertainty; //@@IMPD
         int index_min;
 
         // we search for the closest detection to the tracking person
@@ -587,12 +589,15 @@ public:
                 ROS_INFO("track associated with %i", loop_detection);
             }
         }
-        moving_person_tracked = person_detected[index_min];//@@IMPD
         nb_pts -= nb_persons_detected;
 
         if (associated)
         {
             // if the moving_person_tracked has been associated how we update moving_person_tracked, frequency and uncertainty
+            moving_person_tracked = person_detected[index_min];//@@IMPD
+            frequency = frequency_init;//@@IMPD
+            uncertainty = uncertainty_min;//@@IMPD
+            tracking_mode = true;//@@IMPD
             pub_datmo.publish(moving_person_tracked);
 
             ROS_INFO("moving_person_tracked: (%f, %f), %i, %f", moving_person_tracked.x,
@@ -612,11 +617,19 @@ public:
         else
         {
             // if the moving_person_tracked has not been associated how we update moving_person_tracked, frequency and uncertainty
+            //moving_person_tracked does not change
+            frequency ++; //@@IMPD
+            if(uncertainty < uncertainty_max)
+                uncertainty += uncertainty_inc; //@@IMPD
             ROS_INFO("moving_person_tracked: (%f, %f), %i, %f", moving_person_tracked.x,
                      moving_person_tracked.y,
                      frequency,
                      uncertainty);
 
+            if(frequency > frequency_max) //@@IMPD
+                tracking_mode = false;//@@IMPD
+            else
+                tracking_mode = true; //@@IMPD
             // tracking_mode = ...; when do we switch tracking_mode to false ???
             if (!tracking_mode)
             {

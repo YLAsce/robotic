@@ -115,11 +115,11 @@ void update() {
             init_action();
 
         //we are performing a rotation and a translation
-        if ( cond_goal )//???
+        if ( cond_goal )
         {
             compute_rotation();
             compute_translation();
-            cond_goal = translation_to_do > error_translation_threshold ? true : false;//??? //cond_goal = ... DO NOT FORGET TO UPDATE cond_goal
+            cond_goal = cond_rotation || cond_translation;//@@IMPD //cond_goal = ... DO NOT FORGET TO UPDATE cond_goal
             combine_rotation_and_translation();            
             move_robot();
         }

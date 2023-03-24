@@ -207,7 +207,7 @@ public:
             //      dynamic[loop] = true;//the current hit is dynamic
             // else
             //     dynamic[loop] = false;//else its static
-            if (background[loop] - r[loop] > detection_threshold)
+            if (fabs(background[loop] - r[loop]) > detection_threshold)
                 dynamic[loop] = true;
             else
                 dynamic[loop] = false;
