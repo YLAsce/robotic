@@ -551,15 +551,12 @@ public:
 
         ROS_INFO("detecting a moving person");
 
-        ROS_INFO("detecting a moving person");
-
         for (int loop = 0; loop < nb_persons_detected; loop++)
             if (person_dynamic[loop])
             {
                 // we update moving_person_tracked and publish it
                 moving_person_tracked = person_detected[loop]; //@@IMPD
-                pub_detection_node.publish(moving_person_tracked);
-                ROS_INFO("detecting a moving person done %f %f", moving_person_detected.x, moving_person_detected.y);
+                pub_datmo.publish(moving_person_tracked);
             }
         ROS_INFO("detecting a moving person done");
 
