@@ -557,8 +557,8 @@ public:
             if (person_dynamic[loop])
             {
                 // we update moving_person_tracked and publish it
-                moving_person_detected = person_detected[loop]; //@@IMPD
-                pub_detection_node.publish(moving_person_detected);
+                moving_person_tracked = person_detected[loop]; //@@IMPD
+                pub_detection_node.publish(moving_person_tracked);
                 ROS_INFO("detecting a moving person done %f %f", moving_person_detected.x, moving_person_detected.y);
             }
         ROS_INFO("detecting a moving person done");
