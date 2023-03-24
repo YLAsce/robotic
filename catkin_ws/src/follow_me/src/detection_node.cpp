@@ -130,7 +130,6 @@ public:
                 if (previous_robot_moving) //@@IMPD,  ONLY DO THIS WHEN ROBOT ENTER STOP STATUS!!!
                 {
                     store_background(); //@@IMPD
-                    reset_motion();     //@@IMPD
                 }
                 // if the robot is not moving then we can perform moving person detection
 
@@ -148,6 +147,7 @@ public:
             {
                 // IMPOSSIBLE TO DETECT MOTIONS because the base is moving
                 // what is the value of dynamic table for each hit of the laser ?
+                reset_motion();     //@@IMPD
                 ROS_INFO("robot is moving");
             }
             previous_robot_moving = current_robot_moving;
@@ -207,7 +207,7 @@ public:
             //      dynamic[loop] = true;//the current hit is dynamic
             // else
             //     dynamic[loop] = false;//else its static
-            if (fabs(background[loop] - r[loop]) > detection_threshold)
+            if (background[loop] - r[loop] > detection_threshold)
                 dynamic[loop] = true;
             else
                 dynamic[loop] = false;
