@@ -220,31 +220,36 @@ public:
 
         ROS_INFO("detecting motion");
 
-        /* nb_pts = 0;
-         for (int loop=0; loop<nb_beams; loop++ )
-          {//loop over all the hits
-            the detect of motion ONLY takes place when the robot is not moving, ie when current_robot_moving is false
-            when current_robot_moving is true, dynamic[loop] is false for all the beams
+        nb_pts = 0;
+        for (int loop = 0; loop < nb_beams; loop++)
+        { // loop over all the hits
+            // the detect of motion ONLY takes place when the robot is not moving, ie when current_robot_moving is false
+            // when current_robot_moving is true, dynamic[loop] is false for all the beams
 
-            if the difference between ( the background and the current range ) is higher than "detection_threshold"
-            then
-                 dynamic[loop] = true;//the current hit is dynamic
+            // if the difference between ( the background and the current range ) is higher than "detection_threshold"
+            // then
+            //      dynamic[loop] = true;//the current hit is dynamic
+            // else
+            //     dynamic[loop] = false;//else its static
+            if (fabs(background[loop] - r[loop]) > detection_threshold)
+                dynamic[loop] = true;
             else
-                dynamic[loop] = false;//else its static
+                dynamic[loop] = false;
 
-        if ( dynamic[loop] ) {
+            if (dynamic[loop])
+            {
 
-            //display in blue of hits that are dynamic
-            display[nb_pts] = current_scan[loop];
+                // display in blue of hits that are dynamic
+                display[nb_pts] = current_scan[loop];
 
-            colors[nb_pts].r = 0;
-            colors[nb_pts].g = 0;
-            colors[nb_pts].b = 1;
-            colors[nb_pts].a = 1.0;
+                colors[nb_pts].r = 0;
+                colors[nb_pts].g = 0;
+                colors[nb_pts].b = 1;
+                colors[nb_pts].a = 1.0;
 
-            nb_pts++;
+                nb_pts++;
             }
-        }*/
+        }
 
         ROS_INFO("motion detected");
 
