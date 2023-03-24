@@ -241,8 +241,7 @@ void compute_translation()
 
 void combine_rotation_and_translation()
 {
-
-    float coef_rotation = abs(rotation_speed) / rotation_speed_max;//@@IMPD
+    float coef_rotation = abs(error_rotation) / rotation_speed_max;//@@IMPD
     if ( coef_rotation >= 1 )
         coef_rotation = 1;
     float coef_translation = 1 - coef_rotation;
