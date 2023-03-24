@@ -151,12 +151,19 @@ public:
             {
                 // if the robot is not moving then we can perform moving person detection
                 // DO NOT FORGET to store the background but when ???
+                if (previous_robot_moving) //@@IMPD,  ONLY DO THIS WHEN ROBOT ENTER STOP STATUS!!!
+                {
+                    store_background(); //@@IMPD
+                }
+                detect_motion(); //@@IMPD
+
                 ROS_INFO("robot is not moving");
             }
             else
             {
                 // IMPOSSIBLE TO DETECT MOTIONS because the base is moving
                 // what is the value of dynamic table for each hit of the laser ?
+                reset_motion();
                 ROS_INFO("robot is moving");
             }
             previous_robot_moving = current_robot_moving;
