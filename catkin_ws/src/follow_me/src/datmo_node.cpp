@@ -138,9 +138,6 @@ public:
         // we wait for new data of the laser and of the robot_moving_node to perform laser processing
         if (init_laser && init_robot)
         {
-
-            nb_pts = 0;
-
             init_laser = false;
             ROS_INFO("\n");
             ROS_INFO("New data of laser received");
@@ -155,8 +152,6 @@ public:
                 {
                     store_background(); //@@IMPD
                 }
-                detect_motion(); //@@IMPD
-
                 ROS_INFO("robot is not moving");
             }
             else
@@ -167,8 +162,8 @@ public:
                 ROS_INFO("robot is moving");
             }
             previous_robot_moving = current_robot_moving;
-
-            // we search for moving person in 4 steps
+            detect_motion(); //@@IMPD
+            // we search for moving person in 4 steps       
             perform_clustering(); // to perform clustering
             detect_legs();        // to detect moving legs using cluster
             detect_persons();     // to detect moving_person using moving legs detected
@@ -302,9 +297,7 @@ public:
                 float ycs = current_scan[start].y - current_scan[end].y; //@@IMPD
                 cluster_size[nb_cluster] = sqrt(xcs * xcs + ycs * ycs);  //@@IMPD // to store the size of the cluster ie, the euclidian distance between the first hit of the cluster and the last one
 
-                cluster_middle[nb_cluster] = geometry_msgs::Point();                              //@@IMPD
-                cluster_middle[nb_cluster].x = (current_scan[start].x + current_scan[end].x) / 2; //@@IMPD
-                cluster_middle[nb_cluster].y = (current_scan[start].y + current_scan[end].y) / 2; //@@IMPD // to store the middle of the cluster
+                cluster_middle[nb_cluster] = current_scan[(start + end) / 2]; //@@IMPD // to store the middle of the cluster
 
                 cluster_dynamic[nb_cluster] = nb_dynamic * 100 / (end - start + 1); //@@IMPD NOTICE In Percentage!!!                                                                                                            //@@IMPD                                                                                                                             // to store the percentage of hits of the current cluster that are dynamic
                 // graphical display of the end of the current cluster in red
@@ -373,11 +366,9 @@ public:
         float ycs = current_scan[start].y - current_scan[end].y; //@@IMPD                                                                                                //@@IMPD
         cluster_size[nb_cluster] = sqrt(xcs * xcs + ycs * ycs);  //@@IMPD                                                                                                 //@@IMPD                                                                                                    // to store the size of the cluster ie, the euclidian distance between the first hit of the cluster and the last one
 
-        cluster_middle[nb_cluster] = geometry_msgs::Point();                              //@@IMPD
-        cluster_middle[nb_cluster].x = (current_scan[start].x + current_scan[end].x) / 2; //@@IMPD
-        cluster_middle[nb_cluster].y = (current_scan[start].y + current_scan[end].y) / 2; //@@IMPD // to store the middle of the cluster
+        cluster_middle[nb_cluster] = current_scan[(start+end)/2]; //@@IMPD
 
-        cluster_dynamic[nb_cluster] = nb_dynamic; //@@IMPD                                                                                                               //@@IMPD                                                                                                                             // to store the percentage of hits of the current cluster that are dynamic
+        cluster_dynamic[nb_cluster] = nb_dynamic * 100 / (end - start + 1);                                                                                                             //@@IMPD                                                                                                                             // to store the percentage of hits of the current cluster that are dynamic
         // graphical display of the end of the current cluster in red
         display[nb_pts] = current_scan[end]; //@@IMPD
 
@@ -423,7 +414,7 @@ public:
             if (cluster_size[loop] > leg_size_min && cluster_size[loop] < leg_size_max) //@@IMPD   // the size of the current cluster is higher than "leg_size_min" and lower than "leg_size_max" then the current cluster is a leg
             {
                 leg_detected[nb_legs_detected] = cluster_middle[loop]; //@@IMPD
-                leg_cluster[nb_legs_detected] = loop;                  //@@IMPD
+                leg_cluster[nb_legs_detected] = cluster[loop];                  //@@IMPD
                 if (cluster_dynamic[loop] > dynamic_threshold)         //@@IMPD
                     leg_dynamic[nb_legs_detected] = true;              //@@IMPD
                 else                                                   //@@IMPD
@@ -502,7 +493,7 @@ public:
                 // then we find a person
                 float xx = leg_detected[loop_leg1].x - leg_detected[loop_leg2].x; //@@IMPD
                 float yy = leg_detected[loop_leg1].y - leg_detected[loop_leg2].y; //@@IMPD
-                if (xx * xx + yy * yy < legs_distance_max * legs_distance_max)    //@@IMPD
+                if (xx * xx + yy * yy <= legs_distance_max * legs_distance_max)    //@@IMPD
                 {
                     // we update the person_detected table to store the middle of the person
                     person_detected[nb_persons_detected] = geometry_msgs::Point();                                        //@@IMPD
@@ -570,6 +561,7 @@ public:
             {
                 // we update moving_person_tracked and publish it
                 moving_person_tracked = person_detected[loop]; //@@IMPD
+                tracking_mode = true; //@@IMPD
                 pub_datmo.publish(moving_person_tracked);
             }
         ROS_INFO("detecting a moving person done");
@@ -582,7 +574,7 @@ public:
         ROS_INFO("tracking a moving person");
 
         bool associated = false;
-        float distance_min = uncertainty; //@@IMPD
+        float distance_min = uncertainty; //@@IMPD //uncertainty_max
         int index_min;
 
         // we search for the closest detection to the tracking person
@@ -607,10 +599,12 @@ public:
         {
             // if the moving_person_tracked has been associated how we update moving_person_tracked, frequency and uncertainty
             moving_person_tracked = person_detected[index_min];//@@IMPD
-            frequency = frequency_init;//@@IMPD
+          
             uncertainty = uncertainty_min;//@@IMPD
-            tracking_mode = true;//@@IMPD
             pub_datmo.publish(moving_person_tracked);
+
+            if (frequency < frequency_max)
+        	    frequency++;
 
             ROS_INFO("moving_person_tracked: (%f, %f), %i, %f", moving_person_tracked.x,
                      moving_person_tracked.y,
@@ -625,23 +619,26 @@ public:
             colors[nb_pts].a = 1.0;
 
             nb_pts++;
+
+            pub_datmo.publish(moving_person_tracked);
         }
         else
         {
             // if the moving_person_tracked has not been associated how we update moving_person_tracked, frequency and uncertainty
             //moving_person_tracked does not change
-            frequency ++; //@@IMPD
+            if(frequency > 0) frequency --; //@@IMPD
             if(uncertainty < uncertainty_max)
                 uncertainty += uncertainty_inc; //@@IMPD
+
             ROS_INFO("moving_person_tracked: (%f, %f), %i, %f", moving_person_tracked.x,
                      moving_person_tracked.y,
                      frequency,
                      uncertainty);
 
-            if(frequency > frequency_max) //@@IMPD
-                tracking_mode = false;//@@IMPD
+            if(frequency > 0) //@@IMPD
+                tracking_mode = true;//@@IMPD
             else
-                tracking_mode = true; //@@IMPD
+                tracking_mode = false; //@@IMPD
             // tracking_mode = ...; when do we switch tracking_mode to false ???
             if (!tracking_mode)
             {
