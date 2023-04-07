@@ -201,6 +201,8 @@ void update_variables()
         float diff_position = distancePoints(previous_person_position, person_position);
         if (diff_position > person_move_threshold)
             is_person_moving = true;
+        else
+            is_person_moving = false;
 
         //save as the previous position
         previous_person_position = person_position;
@@ -262,7 +264,7 @@ void process_observing_the_person()
     // if the moving person does not move during a while (use frequency), we switch to the state "rotating_to_the_person"
     if ( new_person_position )
     {
-        ROS_INFO("person_position: (%f, %f), frequency = %f", person_position.x, person_position.y, frequency);
+        ROS_INFO("person_position: (%f, %f), frequency = %d", person_position.x, person_position.y, frequency);
         if(is_person_moving)
             frequency = 0;
     }
