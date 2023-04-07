@@ -210,15 +210,32 @@ void update_variables()
     else
     {
         cycles_no_person++;
-    }      
+    }
 
     if ( new_localization )
     {
+        if(base_position.x == 0 && base_position.y == 0 && base_orientation == 0)
+        {
+            base_position = current_position;
+            base_orientation = current_orientation;
+            ROS_INFO("====== Base initialized: (%f, %f, %f)", base_position.x, base_position.y, base_orientation);
+        }
         //TODO
         // when we receive a new position(x, y, o) of robair in the map, we update:
         // translation_to_base: the translation that robair has to do to reach its base
         // rotation_to_base: the rotation that robair has to do to reach its base
         // local_base_position: the position of the base in the cartesian local frame of robot
+        translation_to_base = distancePoints(current_position, base_position);
+        rotation_to_base = base_orientation - current_orientation;
+        while(rotation_to_base > M_PI)
+	        rotation_to_base -= 2*M_PI;
+        while(rotation_to_base < -M_PI)
+	        rotation_to_base += 2*M_PI;
+
+        float deltax = base_position.x - current_position.x;
+        float deltay = base_position.y - current_position.y;
+        local_base_position.x = deltax * cos(rotation_to_base) - deltay * sin(rotation_to_base);
+        local_base_position.y = deltax * cos(rotation_to_base) + deltay * sin(rotation_to_base);
     }
 
 }
@@ -398,7 +415,7 @@ void process_interacting_with_the_person()
 
     if(frequency >= frequency_expected) 
     {
-        ROS_INFO("[process_interacting_with_the_person]: PERSON NOT MOVING!");
+        ROS_INFO("[process_interacting_with_the_person]: PERSON LEAVE!");
         current_state = rotating_to_the_base;
         return;
     }
@@ -418,8 +435,8 @@ void process_rotating_to_the_base()
     {
         ROS_INFO("current_state: rotating_to_the_base");
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        ROS_INFO("press enter to continue");
-        getchar();
+        //ROS_INFO("press enter to continue");
+        //getchar();
         frequency = 0;
     }
 
@@ -429,6 +446,17 @@ void process_rotating_to_the_base()
     if ( new_localization )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
+        pub_rotation_to_do.publish(local_base_position);
+        if(robot_moving)
+            frequency = 0;
+    }
+    frequency ++;
+
+    if(frequency >= frequency_expected) 
+    {
+        ROS_INFO("[process_rotating_to_the_base]: ROBOT NOT MOVING!");
+        current_state = moving_to_the_base;
+        return;
     }
 
 }
@@ -440,8 +468,8 @@ void process_moving_to_the_base()
     {
         ROS_INFO("current_state: moving_to_the_base");
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        ROS_INFO("press enter to continue");
-        getchar();
+        //ROS_INFO("press enter to continue");
+        //getchar();
         frequency = 0;
     }
 
@@ -451,6 +479,24 @@ void process_moving_to_the_base()
     if ( new_localization )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
+        if( (!robot_moving) && (translation_to_base > close_threshold) )
+            pub_goal_to_reach.publish(local_base_position);
+    }
+
+    if( (!robot_moving) && (translation_to_base <= close_threshold) )
+    {
+        ROS_INFO("[process_moving_to_the_base]: REACH BASE TARGET!");
+        if( robot_moving )
+            frequency = 0;
+        else
+            frequency ++;
+
+        if(frequency >= frequency_expected) 
+        {
+            ROS_INFO("[process_moving_to_the_base]: ROBOT NOT MOVING!");
+            current_state = resetting_orientation;
+            return;
+        }
     }
 
 }
