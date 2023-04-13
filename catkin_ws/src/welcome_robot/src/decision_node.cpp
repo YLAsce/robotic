@@ -58,6 +58,7 @@ private:
     float translation_to_base;
     float rotation_to_base;
     geometry_msgs::Point local_base_position;
+    geometry_msgs::Point unit_circle_to_base;
 
     int current_state, previous_state;
     int frequency;
@@ -231,11 +232,14 @@ void update_variables()
 	        rotation_to_base -= 2*M_PI;
         while(rotation_to_base < -M_PI)
 	        rotation_to_base += 2*M_PI;
+        
+        unit_circle_to_base.x = cos(rotation_to_base);
+        unit_circle_to_base.y = sin(rotation_to_base);
 
         float deltax = base_position.x - current_position.x;
         float deltay = base_position.y - current_position.y;
-        local_base_position.x = deltax * cos(rotation_to_base) - deltay * sin(rotation_to_base);
-        local_base_position.y = deltax * cos(rotation_to_base) + deltay * sin(rotation_to_base);
+        local_base_position.x = deltax * cos(current_orientation) + deltay * sin(current_orientation);
+        local_base_position.y = deltay * cos(current_orientation) - deltax * sin(current_orientation);
     }
 
 }
@@ -446,6 +450,7 @@ void process_rotating_to_the_base()
     if ( new_localization )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
+        //need a threshold?
         pub_rotation_to_do.publish(local_base_position);
         if(robot_moving)
             frequency = 0;
@@ -486,10 +491,8 @@ void process_moving_to_the_base()
     if( (!robot_moving) && (translation_to_base <= close_threshold) )
     {
         ROS_INFO("[process_moving_to_the_base]: REACH BASE TARGET!");
-        if( robot_moving )
-            frequency = 0;
-        else
-            frequency ++;
+
+        frequency ++;
 
         if(frequency >= frequency_expected) 
         {
@@ -506,19 +509,32 @@ void process_resetting_orientation()
 
     if ( state_has_changed )
     {
-        ROS_INFO("current_state: initializing_rotation");
+        ROS_INFO("current_state: resetting_orientation");
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        ROS_INFO("press enter to continue");
-        getchar();
+        //ROS_INFO("press enter to continue");
+        //getchar();
         frequency = 0;
     }
 
     // Processing of the state
     // Robair rotates to its initial orientation
     // if robair is close to its initial orientation and does not move, after a while (use frequency), we switch to the state "waiting_for_a_person"
+
     if ( new_localization )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
+        //need a threshold?
+        pub_rotation_to_do.publish(unit_circle_to_base);
+        if(robot_moving)
+            frequency = 0;
+    }
+    frequency ++;
+
+    if(frequency >= frequency_expected) 
+    {
+        ROS_INFO("[process_resetting_orientation]: ROBOT NOT MOVING!");
+        current_state = waiting_for_a_person;
+        return;
     }
 
 }
