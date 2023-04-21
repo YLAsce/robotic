@@ -266,7 +266,8 @@ void estimate_position() {
     }
     ROS_INFO("(%f, %f, %f): bestscore = %i", estimated_position.x, estimated_position.y, estimated_orientation*180/M_PI, score_max);//@@IMPD
     
-    //publish localization point
+    //zip the orientation in Z axis, and publish localization point
+    estimated_position.z = estimated_orientation;
     pub_localization.publish(estimated_position);
     
     //Update marker display information, the score calculated here is unused.
