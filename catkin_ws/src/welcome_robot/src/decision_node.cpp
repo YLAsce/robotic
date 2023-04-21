@@ -447,13 +447,14 @@ void process_rotating_to_the_base()
     // Processing of the state
     // Robair rotates to be face to its base
     // if robair is face to its base and does not move, after a while (use frequency), we switch to the state "moving_to_the_base"
-    if ( new_localization )
+    //!!!!! detect new localization is FALSE. frequency of new localization is low!
+    if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
         //need a threshold?
         pub_rotation_to_do.publish(local_base_position);
-        if(robot_moving)
-            frequency = 0;
+    } else {
+        frequency = 0;
     }
     frequency ++;
 
@@ -481,10 +482,10 @@ void process_moving_to_the_base()
     // Processing of the state
     // Robair moves to its base
     // if robair is close to its base and does not move, after a while (use frequency), we switch to the state "resetting_orientation"
-    if ( new_localization )
+    if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        if( (!robot_moving) && (translation_to_base > close_threshold) )
+        if(translation_to_base > close_threshold)
             pub_goal_to_reach.publish(local_base_position);
     }
 
@@ -520,13 +521,13 @@ void process_resetting_orientation()
     // Robair rotates to its initial orientation
     // if robair is close to its initial orientation and does not move, after a while (use frequency), we switch to the state "waiting_for_a_person"
 
-    if ( new_localization )
+    if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
         //need a threshold?
         pub_rotation_to_do.publish(unit_circle_to_base);
-        if(robot_moving)
-            frequency = 0;
+    } else {
+        frequency = 0;
     }
     frequency ++;
 
