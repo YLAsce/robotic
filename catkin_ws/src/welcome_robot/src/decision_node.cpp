@@ -556,18 +556,18 @@ void robot_movingCallback(const std_msgs::Bool::ConstPtr& state)
 {
 
     robot_moving = state->data;
-
+    if(robot_moving)
+        ROS_INFO("Robot Moving!");
 }//robot_movingCallback
 
 void localizationCallback(const geometry_msgs::Point::ConstPtr& l)
 {
 // process the localization received from my localization
-
     new_localization = true;
     init_localization = true;
     current_position = *l;
     current_orientation = l->z;
-
+    ROS_INFO("New localization!");
 }
 
 // Distance between two points
