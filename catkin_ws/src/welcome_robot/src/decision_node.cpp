@@ -451,6 +451,7 @@ void process_rotating_to_the_base()
     if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
+        ROS_INFO("local base position: (%f, %f)", local_base_position.x, local_base_position.y);
         //need a threshold?
         pub_rotation_to_do.publish(local_base_position);
     } else {
