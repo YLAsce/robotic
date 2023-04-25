@@ -57,8 +57,9 @@ private:
     float current_orientation;
     float translation_to_base;
     float rotation_to_base;
-    geometry_msgs::Point local_base_position;
-    geometry_msgs::Point unit_circle_to_base;
+    geometry_msgs::Point dir_base_orientation;
+    geometry_msgs::Point dir_base_translation;
+    geometry_msgs::Point dir_reset_orientation;
 
     int current_state, previous_state;
     int frequency;
@@ -225,21 +226,35 @@ void update_variables()
         // when we receive a new position(x, y, o) of robair in the map, we update:
         // translation_to_base: the translation that robair has to do to reach its base
         // rotation_to_base: the rotation that robair has to do to reach its base
-        // local_base_position: the position of the base in the cartesian local frame of robot
+        // dir_base_orientation: the direction to the base when orientation on unit circle
         translation_to_base = distancePoints(current_position, base_position);
         rotation_to_base = base_orientation - current_orientation;
         while(rotation_to_base > M_PI)
 	        rotation_to_base -= 2*M_PI;
         while(rotation_to_base < -M_PI)
 	        rotation_to_base += 2*M_PI;
-        
-        unit_circle_to_base.x = cos(rotation_to_base);
-        unit_circle_to_base.y = sin(rotation_to_base);
+        // used to reset orientation
+        dir_reset_orientation.x = cos(rotation_to_base);
+        dir_reset_orientation.y = sin(rotation_to_base);
 
-        float deltax = base_position.x - current_position.x;
-        float deltay = base_position.y - current_position.y;
-        local_base_position.x = deltax * cos(current_orientation) + deltay * sin(current_orientation);
-        local_base_position.y = deltay * cos(current_orientation) - deltax * sin(current_orientation);
+        float xx = base_position.x - current_position.x;
+        float yy = base_position.y - current_position.y;
+
+        float angle_to_base = acos( xx / translation_to_base );
+        if ( yy < 0 )
+            angle_to_base *=-1;
+
+        float diff_angle_to_base = angle_to_base - current_orientation;
+        while(diff_angle_to_base > M_PI)
+	        diff_angle_to_base -= 2*M_PI;
+        while(diff_angle_to_base < -M_PI)
+	        diff_angle_to_base += 2*M_PI;
+        // used to rotate to the base
+        dir_base_orientation.x = cos(diff_angle_to_base);
+        dir_base_orientation.y = sin(diff_angle_to_base);
+
+        dir_base_translation.x = translation_to_base;
+        dir_base_translation.y = 0;
     }
 
 }
@@ -451,9 +466,9 @@ void process_rotating_to_the_base()
     if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        ROS_INFO("local base position: (%f, %f)", local_base_position.x, local_base_position.y);
+        ROS_INFO("local base position: (%f, %f)", dir_base_orientation.x, dir_base_orientation.y);
         //need a threshold?
-        pub_rotation_to_do.publish(local_base_position);
+        pub_rotation_to_do.publish(dir_base_orientation);
     } else {
         frequency = 0;
     }
@@ -486,8 +501,8 @@ void process_moving_to_the_base()
     if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        if(translation_to_base > close_threshold)
-            pub_goal_to_reach.publish(local_base_position);
+        if(dir_base_translation > close_threshold)
+            pub_goal_to_reach.publish(dir_base_translation);
     }
 
     if( (!robot_moving) && (translation_to_base <= close_threshold) )
@@ -526,7 +541,7 @@ void process_resetting_orientation()
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
         //need a threshold?
-        pub_rotation_to_do.publish(unit_circle_to_base);
+        pub_rotation_to_do.publish(dir_reset_orientation);
     } else {
         frequency = 0;
     }
