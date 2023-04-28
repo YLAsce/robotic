@@ -23,6 +23,7 @@
 #define max_base_distance 6
 #define close_threshold 0.5 // if less than 50cm, the distance is close
 #define person_move_threshold 0.1 // if less than 10cm, a person is not moving
+#define rotating_threshold 0.1
 #define cycles_no_person_threshold 20
 
 class decision_node
@@ -68,6 +69,8 @@ private:
     float base_orientation;
     geometry_msgs::Point origin_position;
     bool state_has_changed;
+
+    float diff_angle_to_base = 0;
 
 public:
 
@@ -244,7 +247,7 @@ void update_variables()
         if ( yy < 0 )
             angle_to_base *=-1;
 
-        float diff_angle_to_base = angle_to_base - current_orientation;
+        diff_angle_to_base = angle_to_base - current_orientation;
         while(diff_angle_to_base > M_PI)
 	        diff_angle_to_base -= 2*M_PI;
         while(diff_angle_to_base < -M_PI)
@@ -468,7 +471,8 @@ void process_rotating_to_the_base()
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
         ROS_INFO("local base position: (%f, %f)", dir_base_orientation.x, dir_base_orientation.y);
         //need a threshold?
-        pub_rotation_to_do.publish(dir_base_orientation);
+        if(abs(diff_angle_to_base) > rotating_threshold)
+            pub_rotation_to_do.publish(dir_base_orientation);
     } else {
         frequency = 0;
     }
@@ -501,7 +505,7 @@ void process_moving_to_the_base()
     if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        if(dir_base_translation > close_threshold)
+        if(dir_base_translation.x > close_threshold)
             pub_goal_to_reach.publish(dir_base_translation);
     }
 
@@ -541,7 +545,8 @@ void process_resetting_orientation()
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
         //need a threshold?
-        pub_rotation_to_do.publish(dir_reset_orientation);
+        if(abs(rotation_to_base) > rotating_threshold)
+            pub_rotation_to_do.publish(dir_reset_orientation);
     } else {
         frequency = 0;
     }
