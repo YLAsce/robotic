@@ -469,7 +469,7 @@ void process_rotating_to_the_base()
     if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
-        ROS_INFO("local base position: (%f, %f)", dir_base_orientation.x, dir_base_orientation.y);
+        ROS_INFO("local base position: %f (%f, %f)", diff_angle_to_base, dir_base_orientation.x, dir_base_orientation.y);
         //need a threshold?
         if(abs(diff_angle_to_base) > rotating_threshold)
             pub_rotation_to_do.publish(dir_base_orientation);
