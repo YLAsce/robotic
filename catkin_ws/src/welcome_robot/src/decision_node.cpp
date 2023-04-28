@@ -253,8 +253,8 @@ void update_variables()
         while(diff_angle_to_base < -M_PI)
 	        diff_angle_to_base += 2*M_PI;
         // used to rotate to the base
-        dir_base_orientation.x = cos(diff_angle_to_base);
-        dir_base_orientation.y = sin(diff_angle_to_base);
+        //dir_base_orientation.x = cos(diff_angle_to_base);
+        //dir_base_orientation.y = sin(diff_angle_to_base);
 
         dir_base_translation.x = translation_to_base;
         dir_base_translation.y = 0;
@@ -469,6 +469,8 @@ void process_rotating_to_the_base()
     if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
+        dir_base_orientation.x = dir_base_orientation.y = 10001;
+        dir_base_orientation.z = diff_angle_to_base;
         ROS_INFO("local base position: %f (%f, %f)", diff_angle_to_base, dir_base_orientation.x, dir_base_orientation.y);
         //need a threshold?
         if(abs(diff_angle_to_base) > rotating_threshold)
@@ -544,6 +546,8 @@ void process_resetting_orientation()
     if ( !robot_moving )
     {
         ROS_INFO("position of robair in the map: (%f, %f, %f)", current_position.x, current_position.y, current_orientation*180/M_PI);
+        dir_reset_orientation.x = dir_reset_orientation.y = 10001;
+        dir_reset_orientation.z = rotation_to_base;
         //need a threshold?
         if(abs(rotation_to_base) > rotating_threshold)
             pub_rotation_to_do.publish(dir_reset_orientation);
