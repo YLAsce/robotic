@@ -104,25 +104,17 @@ void init_rotation()
     // we have a rotation and a translation to perform
     // we compute the /translation_to_do
     translation_to_do = sqrt( ( goal_to_reach.x * goal_to_reach.x ) + ( goal_to_reach.y * goal_to_reach.y ) );
-    // here in both mode(use z or use x,y), translation to do is >0, ok
+
     if ( translation_to_do )
     {
-        if(goal_to_reach.x > 10000 && goal_to_reach.y > 10000) {
-            // TRICK!!! if x>10000 & y>10000, means using z directly as rotation angle, not calculate again
-            rotation_to_do = goal_to_reach.z;
-        }
-        else
-        {
-            //we compute the /rotation_to_do using x & y
-            rotation_to_do = acos( goal_to_reach.x / translation_to_do );
-            if ( goal_to_reach.y < 0 )
-                rotation_to_do *=-1;
-        }
+
         //we compute the /rotation_to_do
-        
+        rotation_to_do = acos( goal_to_reach.x / translation_to_do );
+        if ( goal_to_reach.y < 0 )
+            rotation_to_do *=-1;
 
         //we initialize the pid for the control of rotation
-
+	
         initial_orientation = current_orientation; //TO COMPLETE
         error_integral_rotation = 0;
         error_previous_rotation = 0;
@@ -206,8 +198,10 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& o) {
 
 void goal_to_reachCallback(const geometry_msgs::Point::ConstPtr& g) {
 // process the goal received from moving_persons detector
+
     new_goal_to_reach = true;
     goal_to_reach = *g;
+
 }
 
 // Distance between two points
